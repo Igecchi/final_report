@@ -703,5 +703,7 @@ coef <- summaryStep.all_ols_dt3_2_new_$coefficients           #回帰係数
 r.squared <- summaryStep.all_ols_dt3_2_new_$r.squared         #決定係数
 adj.r.squared <- summaryStep.all_ols_dt3_2_new_$adj.r.squared #修正決定係数
 resultTable <- cbind(coef, r.squared = r.squared, adj.r.squared = adj.r.squared)
+resultTable2 <- cbind(coef)
 write.csv(resultTable, "~/Documents/GitHub/final_report/data/stepwise_olm.csv")
 stargazer(resultTable, type = "html", out = "Documents/GitHub/final_report/data/stepwise_olm.doc")
+stargazer(resultTable2, type = "html", out = "Documents/GitHub/final_report/data/stepwise_olm2.doc")
