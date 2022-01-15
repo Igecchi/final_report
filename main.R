@@ -38,6 +38,7 @@ filter(tmp2, tmp2[2]>4)
 # write.csv(x = finance_info_2017_2020, file = "~/Documents/GitHub/final_report/data/2017_2020_finance_final2_modified2.csv")
 # fwrite(2017_2020_finance_final2_modified2,"Documents/GitHub/final_report/data/new/2017_2020_finance_final2_modified2.csv")
 
+############## 元データ修正後　##########################
 #ダウンロードしたデータを取り込む
 df <- read_csv("~/Documents/GitHub/final_report/data/target_final.csv")
 
@@ -55,14 +56,6 @@ stock_component <- read_csv("~/Documents/GitHub/final_report/data/stock_componen
 basic_info_2017_2021 <- read_csv("~/Documents/GitHub/final_report/data/basic_info_2017_2021_all.csv")
 # transfer_2017_2021 <- read_csv("Documents/GitHub/final_report/data/transfer_2017_2021.csv", locale = locale(encoding = "SHIFT-JIS"))
 
-
-## stockデータの前処理 ##
-#2021年11月・12月のデータを削除
-# stock_info_2017_2021<-stock_info_2017_2021[!(stock_info_2017_2021$fiscal_year==2021 & stock_info_2017_2021$fiscal_month==11),]
-# stock_info_2017_2021<-stock_info_2017_2021[!(stock_info_2017_2021$fiscal_year==2021 & stock_info_2017_2021$fiscal_month==12),]
-# summary(stock_info_2017_2021)
-
-# target
 
 #データを結合する
 # df <- dplyr::left_join(finance,stock, by = c("corp_name", "fiscal_date", "fiscal_year", "fiscal_month"))
@@ -128,237 +121,6 @@ write.csv(x = vif_res, file = "~/Documents/GitHub/final_report/data/vif_cor_all.
 #   df <- cbind(df, tmp)
 # }
 
-#変化分・変化率を取るために、まずはlead(lag)を取る
-# for_lag <- c('current_assets','cash_and_cash_equivalents','non_current_assets','tangible_fixed_assets','intangible_fixed_assets','sales_goodwill','patent_right','software',
-#               'goodwill','leased_asset','trademark','design_right','other_intangible_fixed_assets','total_investment_and_other_assets','development_cost','total_assets',
-#               'current_liabilities','non_current_liabilities','total_debt','non_controlling_interests','total_liabilities_and_net_assets','capital_attributable_to_owners_of_the_parent_company',
-#               'sales_operating_revenue','financial_income','sales_cost','sales_operating_cost','unrealized_profit_on_installment_sales',
-#               'sga','financial_costs','employees_end_term','avg_temp_employees','r_d_expenses','capital_investment','officer_bonus_provision','goodwill_amortization',
-#               'sga_sales_commission','sga_storage_costs','sga_advertising_expenses','sga_sales_expansion_costs','sga_allowance_for_doubtful_accounts','sga_officer_compensation',
-#               'sga_provision_for_retirement_benefits_for_officers','sga_provision_for_bonuses_for_directors','sga_personnel_welfare_expenses','sga_provision_for_retirement_benefits',
-#               'sga_depreciation','sga_goodwill_amortization','sga_rent','sga_taxes_and_public_dues','sga_patent_fee_paid','sga_rd_cost','sga_warranty_repair_costs','sga_other',
-#               'gross_profit','rd_expenses','operating_income','non_operating_income','non_operating_cost','ordinary_profit','income_before_income_taxes',
-#               'net_income_from_continuing_operations','net_income_from_non_continuing_operations','net_income_consolidated','market_cap',
-#               'dividend','market_cap_new','simple_q','roe','roa','per')
-
-## leadを取る
-df_tmp <- df_tmp %>%
-  group_by(corp_name) %>%
-  mutate_all(funs(lead1 = dplyr::lead(., n=1), lead2 = dplyr::lead(., n=2), lead3 = dplyr::lead(., n=3)))
-df_tmp
-
-#変化分・変化率を取る
-df_tmp <- df_tmp %>% 
-  mutate('dt1_n_consolidated_subsidiaries' = n_consolidated_subsidiaries_lead1 - n_consolidated_subsidiaries) %>%
-  mutate('dt1_n_consolidated_subsidiaries_ipo' = n_consolidated_subsidiaries_ipo_lead1 - n_consolidated_subsidiaries_ipo) %>%
-  mutate('dt1_current_assets' = current_assets_lead1 - current_assets) %>%
-  #mutate('dt1_cash_and_cash_equivalents' = cash_and_cash_equivalents_lead1 - cash_and_cash_equivalents) %>%
-  mutate('dt1_non_current_assets' = non_current_assets_lead1 - non_current_assets) %>%
-  mutate('dt1_tangible_fixed_assets' = tangible_fixed_assets_lead1 - tangible_fixed_assets) %>%
-  mutate('dt1_intangible_fixed_assets' = intangible_fixed_assets_lead1 - intangible_fixed_assets) %>%
-  # mutate('dt1_patent_right' = patent_right_lead1 - patent_right) %>%
-  # mutate('dt1_software' = software_lead1 - software) %>%
-  # mutate('dt1_goodwill' = goodwill_lead1 - goodwill) %>%
-  # mutate('dt1_leased_asset' = leased_asset_lead1 - leased_asset) %>%
-  # mutate('dt1_trademark' = trademark_lead1 - trademark) %>%
-  mutate('dt1_other_intangible_fixed_assets' = other_intangible_fixed_assets_lead1 - other_intangible_fixed_assets) %>%
-  mutate('dt1_total_investment_and_other_assets' = total_investment_and_other_assets_lead1 - total_investment_and_other_assets) %>%
-  mutate('dt1_total_assets' = total_assets_lead1 - total_assets) %>%
-  mutate('dt1_current_liabilities' = current_liabilities_lead1 - current_liabilities) %>%
-  mutate('dt1_non_current_liabilities' = non_current_liabilities_lead1 - non_current_liabilities) %>%
-  mutate('dt1_total_debt' = total_debt_lead1 - total_debt) %>%
-  mutate('dt1_non_controlling_interests' = non_controlling_interests_lead1 - non_controlling_interests) %>%
-  mutate('dt1_total_liabilities_and_net_assets' = total_liabilities_and_net_assets_lead1 - total_liabilities_and_net_assets) %>%
-  mutate('dt1_capital_attributable_to_owners_of_the_parent_company' = capital_attributable_to_owners_of_the_parent_company_lead1 - capital_attributable_to_owners_of_the_parent_company) %>%
-  mutate('dt1_sales_operating_revenue' = sales_operating_revenue_lead1 - sales_operating_revenue) %>%
-  mutate('dt1_financial_income' = financial_income_lead1 - financial_income) %>%
-  mutate('dt1_sales_cost' = sales_cost_lead1 - sales_cost) %>%
-  mutate('dt1_sales_operating_cost' = sales_operating_cost_lead1 - sales_operating_cost) %>%
-  mutate('dt1_unrealized_profit_on_installment_sales' = unrealized_profit_on_installment_sales_lead1 - unrealized_profit_on_installment_sales) %>%
-  mutate('dt1_sga' = sga_lead1 - sga) %>%
-  mutate('dt1_financial_costs' = financial_costs_lead1 - financial_costs) %>%
-  mutate('dt1_employees_end_term' = employees_end_term_lead1 - employees_end_term) %>%
-  mutate('dt1_avg_temp_employees' = avg_temp_employees_lead1 - avg_temp_employees) %>%
-  mutate('dt1_r_d_expenses' = r_d_expenses_lead1 - r_d_expenses) %>%
-  mutate('dt1_capital_investment' = capital_investment_lead1 - capital_investment) %>%
-  mutate('dt1_goodwill_amortization' = goodwill_amortization_lead1 - goodwill_amortization) %>%
-  mutate('dt1_sga_sales_commission' = sga_sales_commission_lead1 - sga_sales_commission) %>%
-  mutate('dt1_sga_storage_costs' = sga_storage_costs_lead1 - sga_storage_costs) %>%
-  mutate('dt1_sga_advertising_expenses' = sga_advertising_expenses_lead1 - sga_advertising_expenses) %>%
-  mutate('dt1_sga_sales_expansion_costs' = sga_sales_expansion_costs_lead1 - sga_sales_expansion_costs) %>%
-  mutate('dt1_sga_allowance_for_doubtful_accounts' = sga_allowance_for_doubtful_accounts_lead1 - sga_allowance_for_doubtful_accounts) %>%
-  mutate('dt1_sga_officer_compensation' = sga_officer_compensation_lead1 - sga_officer_compensation) %>%
-  mutate('dt1_sga_provision_for_retirement_benefits_for_officers' = sga_provision_for_retirement_benefits_for_officers_lead1 - sga_provision_for_retirement_benefits_for_officers) %>%
-  mutate('dt1_sga_provision_for_bonuses_for_directors' = sga_provision_for_bonuses_for_directors_lead1 - sga_provision_for_bonuses_for_directors) %>%
-  mutate('dt1_sga_personnel_welfare_expenses' = sga_personnel_welfare_expenses_lead1 - sga_personnel_welfare_expenses) %>%
-  mutate('dt1_sga_provision_for_retirement_benefits' = sga_provision_for_retirement_benefits_lead1 - sga_provision_for_retirement_benefits) %>%
-  mutate('dt1_sga_depreciation' = sga_depreciation_lead1 - sga_depreciation) %>%
-  mutate('dt1_sga_goodwill_amortization' = sga_goodwill_amortization_lead1 - sga_goodwill_amortization) %>%
-  mutate('dt1_sga_rent' = sga_rent_lead1 - sga_rent) %>%
-  mutate('dt1_sga_taxes_and_public_dues' = sga_taxes_and_public_dues_lead1 - sga_taxes_and_public_dues) %>%
-  mutate('dt1_sga_patent_fee_paid' = sga_patent_fee_paid_lead1 - sga_patent_fee_paid) %>%
-  mutate('dt1_sga_rd_cost' = sga_rd_cost_lead1 - sga_rd_cost) %>%
-  mutate('dt1_sga_warranty_repair_costs' = sga_warranty_repair_costs_lead1 - sga_warranty_repair_costs) %>%
-  mutate('dt1_sga_other' = sga_other_lead1 - sga_other) %>%
-  mutate('dt1_gross_profit' = gross_profit_lead1 - gross_profit) %>%
-  mutate('dt1_rd_expenses' = rd_expenses_lead1 - rd_expenses) %>%
-  mutate('dt1_operating_income' = operating_income_lead1 - operating_income) %>%
-  mutate('dt1_non_operating_income' = non_operating_income_lead1 - non_operating_income) %>%
-  mutate('dt1_non_operating_cost' = non_operating_cost_lead1 - non_operating_cost) %>%
-  mutate('dt1_ordinary_profit' = ordinary_profit_lead1 - ordinary_profit) %>%
-  mutate('dt1_income_before_income_taxes' = income_before_income_taxes_lead1 - income_before_income_taxes) %>%
-  mutate('dt1_net_income_from_continuing_operations' = net_income_from_continuing_operations_lead1 - net_income_from_continuing_operations) %>%
-  mutate('dt1_net_income_from_non_continuing_operations' = net_income_from_non_continuing_operations_lead1 - net_income_from_non_continuing_operations) %>%
-  mutate('dt1_net_income_consolidated' = net_income_consolidated_lead1 - net_income_consolidated) %>%
-  mutate('dt1_dividend' = dividend_lead1 - dividend) %>%
-  mutate('dt1_market_cap_new' = market_cap_new_lead1 - market_cap_new) %>%
-  mutate('dt1_p_gov' = p_gov_lead1 - p_gov) %>%
-  mutate('dt1_p_bank' = p_bank_lead1 - p_bank) %>%
-  mutate('dt1_p_stockc' = p_stockc_lead1 - p_stockc) %>%
-  mutate('dt1_p_other' = p_other_lead1 - p_other) %>%
-  mutate('dt1_p_foreign' = p_foreign_lead1 - p_foreign) %>%
-  mutate('dt1_p_individual' = p_individual_lead1 - p_individual) %>%
-  
-  mutate('dt2_n_consolidated_subsidiaries' = n_consolidated_subsidiaries_lead2 - n_consolidated_subsidiaries) %>%
-  mutate('dt2_n_consolidated_subsidiaries_ipo' = n_consolidated_subsidiaries_ipo_lead2 - n_consolidated_subsidiaries_ipo) %>%
-  mutate('dt2_current_assets' = current_assets_lead2 - current_assets) %>%
-  #mutate('dt2_cash_and_cash_equivalents' = cash_and_cash_equivalents_lead2 - cash_and_cash_equivalents) %>%
-  mutate('dt2_non_current_assets' = non_current_assets_lead2 - non_current_assets) %>%
-  mutate('dt2_tangible_fixed_assets' = tangible_fixed_assets_lead2 - tangible_fixed_assets) %>%
-  mutate('dt2_intangible_fixed_assets' = intangible_fixed_assets_lead2 - intangible_fixed_assets) %>%
-  # mutate('dt2_patent_right' = patent_right_lead2 - patent_right) %>%
-  # mutate('dt2_software' = software_lead2 - software) %>%
-  # mutate('dt2_goodwill' = goodwill_lead2 - goodwill) %>%
-  # mutate('dt2_leased_asset' = leased_asset_lead2 - leased_asset) %>%
-  # mutate('dt2_trademark' = trademark_lead2 - trademark) %>%
-  mutate('dt2_other_intangible_fixed_assets' = other_intangible_fixed_assets_lead2 - other_intangible_fixed_assets) %>%
-  mutate('dt2_total_investment_and_other_assets' = total_investment_and_other_assets_lead2 - total_investment_and_other_assets) %>%
-  mutate('dt2_total_assets' = total_assets_lead2 - total_assets) %>%
-  mutate('dt2_current_liabilities' = current_liabilities_lead2 - current_liabilities) %>%
-  mutate('dt2_non_current_liabilities' = non_current_liabilities_lead2 - non_current_liabilities) %>%
-  mutate('dt2_total_debt' = total_debt_lead2 - total_debt) %>%
-  mutate('dt2_non_controlling_interests' = non_controlling_interests_lead2 - non_controlling_interests) %>%
-  mutate('dt2_total_liabilities_and_net_assets' = total_liabilities_and_net_assets_lead2 - total_liabilities_and_net_assets) %>%
-  mutate('dt2_capital_attributable_to_owners_of_the_parent_company' = capital_attributable_to_owners_of_the_parent_company_lead2 - capital_attributable_to_owners_of_the_parent_company) %>%
-  mutate('dt2_sales_operating_revenue' = sales_operating_revenue_lead2 - sales_operating_revenue) %>%
-  mutate('dt2_financial_income' = financial_income_lead2 - financial_income) %>%
-  mutate('dt2_sales_cost' = sales_cost_lead2 - sales_cost) %>%
-  mutate('dt2_sales_operating_cost' = sales_operating_cost_lead2 - sales_operating_cost) %>%
-  mutate('dt2_unrealized_profit_on_installment_sales' = unrealized_profit_on_installment_sales_lead2 - unrealized_profit_on_installment_sales) %>%
-  mutate('dt2_sga' = sga_lead2 - sga) %>%
-  mutate('dt2_financial_costs' = financial_costs_lead2 - financial_costs) %>%
-  mutate('dt2_employees_end_term' = employees_end_term_lead2 - employees_end_term) %>%
-  mutate('dt2_avg_temp_employees' = avg_temp_employees_lead2 - avg_temp_employees) %>%
-  mutate('dt2_r_d_expenses' = r_d_expenses_lead2 - r_d_expenses) %>%
-  mutate('dt2_capital_investment' = capital_investment_lead2 - capital_investment) %>%
-  mutate('dt2_goodwill_amortization' = goodwill_amortization_lead2 - goodwill_amortization) %>%
-  mutate('dt2_sga_sales_commission' = sga_sales_commission_lead2 - sga_sales_commission) %>%
-  mutate('dt2_sga_storage_costs' = sga_storage_costs_lead2 - sga_storage_costs) %>%
-  mutate('dt2_sga_advertising_expenses' = sga_advertising_expenses_lead2 - sga_advertising_expenses) %>%
-  mutate('dt2_sga_sales_expansion_costs' = sga_sales_expansion_costs_lead2 - sga_sales_expansion_costs) %>%
-  mutate('dt2_sga_allowance_for_doubtful_accounts' = sga_allowance_for_doubtful_accounts_lead2 - sga_allowance_for_doubtful_accounts) %>%
-  mutate('dt2_sga_officer_compensation' = sga_officer_compensation_lead2 - sga_officer_compensation) %>%
-  mutate('dt2_sga_provision_for_retirement_benefits_for_officers' = sga_provision_for_retirement_benefits_for_officers_lead2 - sga_provision_for_retirement_benefits_for_officers) %>%
-  mutate('dt2_sga_provision_for_bonuses_for_directors' = sga_provision_for_bonuses_for_directors_lead2 - sga_provision_for_bonuses_for_directors) %>%
-  mutate('dt2_sga_personnel_welfare_expenses' = sga_personnel_welfare_expenses_lead2 - sga_personnel_welfare_expenses) %>%
-  mutate('dt2_sga_provision_for_retirement_benefits' = sga_provision_for_retirement_benefits_lead2 - sga_provision_for_retirement_benefits) %>%
-  mutate('dt2_sga_depreciation' = sga_depreciation_lead2 - sga_depreciation) %>%
-  mutate('dt2_sga_goodwill_amortization' = sga_goodwill_amortization_lead2 - sga_goodwill_amortization) %>%
-  mutate('dt2_sga_rent' = sga_rent_lead2 - sga_rent) %>%
-  mutate('dt2_sga_taxes_and_public_dues' = sga_taxes_and_public_dues_lead2 - sga_taxes_and_public_dues) %>%
-  mutate('dt2_sga_patent_fee_paid' = sga_patent_fee_paid_lead2 - sga_patent_fee_paid) %>%
-  mutate('dt2_sga_rd_cost' = sga_rd_cost_lead2 - sga_rd_cost) %>%
-  mutate('dt2_sga_warranty_repair_costs' = sga_warranty_repair_costs_lead2 - sga_warranty_repair_costs) %>%
-  mutate('dt2_sga_other' = sga_other_lead2 - sga_other) %>%
-  mutate('dt2_gross_profit' = gross_profit_lead2 - gross_profit) %>%
-  mutate('dt2_rd_expenses' = rd_expenses_lead2 - rd_expenses) %>%
-  mutate('dt2_operating_income' = operating_income_lead2 - operating_income) %>%
-  mutate('dt2_non_operating_income' = non_operating_income_lead2 - non_operating_income) %>%
-  mutate('dt2_non_operating_cost' = non_operating_cost_lead2 - non_operating_cost) %>%
-  mutate('dt2_ordinary_profit' = ordinary_profit_lead2 - ordinary_profit) %>%
-  mutate('dt2_income_before_income_taxes' = income_before_income_taxes_lead2 - income_before_income_taxes) %>%
-  mutate('dt2_net_income_from_continuing_operations' = net_income_from_continuing_operations_lead2 - net_income_from_continuing_operations) %>%
-  mutate('dt2_net_income_from_non_continuing_operations' = net_income_from_non_continuing_operations_lead2 - net_income_from_non_continuing_operations) %>%
-  mutate('dt2_net_income_consolidated' = net_income_consolidated_lead2 - net_income_consolidated) %>%
-  mutate('dt2_dividend' = dividend_lead2 - dividend) %>%
-  mutate('dt2_market_cap_new' = market_cap_new_lead2 - market_cap_new) %>%
-  mutate('dt2_p_gov' = p_gov_lead2 - p_gov) %>%
-  mutate('dt2_p_bank' = p_bank_lead2 - p_bank) %>%
-  mutate('dt2_p_stockc' = p_stockc_lead2 - p_stockc) %>%
-  mutate('dt2_p_other' = p_other_lead2 - p_other) %>%
-  mutate('dt2_p_foreign' = p_foreign_lead2 - p_foreign) %>%
-  mutate('dt2_p_individual' = p_individual_lead2 - p_individual) %>%
-  
-  mutate('dt3_n_consolidated_subsidiaries' = n_consolidated_subsidiaries_lead3 - n_consolidated_subsidiaries) %>%
-  mutate('dt3_n_consolidated_subsidiaries_ipo' = n_consolidated_subsidiaries_ipo_lead3 - n_consolidated_subsidiaries_ipo) %>%
-  mutate('dt3_current_assets' = current_assets_lead3 - current_assets) %>%
-  #mutate('dt3_cash_and_cash_equivalents' = cash_and_cash_equivalents_lead3 - cash_and_cash_equivalents) %>%
-  mutate('dt3_non_current_assets' = non_current_assets_lead3 - non_current_assets) %>%
-  mutate('dt3_tangible_fixed_assets' = tangible_fixed_assets_lead3 - tangible_fixed_assets) %>%
-  mutate('dt3_intangible_fixed_assets' = intangible_fixed_assets_lead3 - intangible_fixed_assets) %>%
-  # mutate('dt3_patent_right' = patent_right_lead3 - patent_right) %>%
-  # mutate('dt3_software' = software_lead3 - software) %>%
-  # mutate('dt3_goodwill' = goodwill_lead3 - goodwill) %>%
-  # mutate('dt3_leased_asset' = leased_asset_lead3 - leased_asset) %>%
-  # mutate('dt3_trademark' = trademark_lead3 - trademark) %>%
-  mutate('dt3_other_intangible_fixed_assets' = other_intangible_fixed_assets_lead3 - other_intangible_fixed_assets) %>%
-  mutate('dt3_total_investment_and_other_assets' = total_investment_and_other_assets_lead3 - total_investment_and_other_assets) %>%
-  mutate('dt3_total_assets' = total_assets_lead3 - total_assets) %>%
-  mutate('dt3_current_liabilities' = current_liabilities_lead3 - current_liabilities) %>%
-  mutate('dt3_non_current_liabilities' = non_current_liabilities_lead3 - non_current_liabilities) %>%
-  mutate('dt3_total_debt' = total_debt_lead3 - total_debt) %>%
-  mutate('dt3_non_controlling_interests' = non_controlling_interests_lead3 - non_controlling_interests) %>%
-  mutate('dt3_total_liabilities_and_net_assets' = total_liabilities_and_net_assets_lead3 - total_liabilities_and_net_assets) %>%
-  mutate('dt3_capital_attributable_to_owners_of_the_parent_company' = capital_attributable_to_owners_of_the_parent_company_lead3 - capital_attributable_to_owners_of_the_parent_company) %>%
-  mutate('dt3_sales_operating_revenue' = sales_operating_revenue_lead3 - sales_operating_revenue) %>%
-  mutate('dt3_financial_income' = financial_income_lead3 - financial_income) %>%
-  mutate('dt3_sales_cost' = sales_cost_lead3 - sales_cost) %>%
-  mutate('dt3_sales_operating_cost' = sales_operating_cost_lead3 - sales_operating_cost) %>%
-  mutate('dt3_unrealized_profit_on_installment_sales' = unrealized_profit_on_installment_sales_lead3 - unrealized_profit_on_installment_sales) %>%
-  mutate('dt3_sga' = sga_lead3 - sga) %>%
-  mutate('dt3_financial_costs' = financial_costs_lead3 - financial_costs) %>%
-  mutate('dt3_employees_end_term' = employees_end_term_lead3 - employees_end_term) %>%
-  mutate('dt3_avg_temp_employees' = avg_temp_employees_lead3 - avg_temp_employees) %>%
-  mutate('dt3_r_d_expenses' = r_d_expenses_lead3 - r_d_expenses) %>%
-  mutate('dt3_capital_investment' = capital_investment_lead3 - capital_investment) %>%
-  mutate('dt3_goodwill_amortization' = goodwill_amortization_lead3 - goodwill_amortization) %>%
-  mutate('dt3_sga_sales_commission' = sga_sales_commission_lead3 - sga_sales_commission) %>%
-  mutate('dt3_sga_storage_costs' = sga_storage_costs_lead3 - sga_storage_costs) %>%
-  mutate('dt3_sga_advertising_expenses' = sga_advertising_expenses_lead3 - sga_advertising_expenses) %>%
-  mutate('dt3_sga_sales_expansion_costs' = sga_sales_expansion_costs_lead3 - sga_sales_expansion_costs) %>%
-  mutate('dt3_sga_allowance_for_doubtful_accounts' = sga_allowance_for_doubtful_accounts_lead3 - sga_allowance_for_doubtful_accounts) %>%
-  mutate('dt3_sga_officer_compensation' = sga_officer_compensation_lead3 - sga_officer_compensation) %>%
-  mutate('dt3_sga_provision_for_retirement_benefits_for_officers' = sga_provision_for_retirement_benefits_for_officers_lead3 - sga_provision_for_retirement_benefits_for_officers) %>%
-  mutate('dt3_sga_provision_for_bonuses_for_directors' = sga_provision_for_bonuses_for_directors_lead3 - sga_provision_for_bonuses_for_directors) %>%
-  mutate('dt3_sga_personnel_welfare_expenses' = sga_personnel_welfare_expenses_lead3 - sga_personnel_welfare_expenses) %>%
-  mutate('dt3_sga_provision_for_retirement_benefits' = sga_provision_for_retirement_benefits_lead3 - sga_provision_for_retirement_benefits) %>%
-  mutate('dt3_sga_depreciation' = sga_depreciation_lead3 - sga_depreciation) %>%
-  mutate('dt3_sga_goodwill_amortization' = sga_goodwill_amortization_lead3 - sga_goodwill_amortization) %>%
-  mutate('dt3_sga_rent' = sga_rent_lead3 - sga_rent) %>%
-  mutate('dt3_sga_taxes_and_public_dues' = sga_taxes_and_public_dues_lead3 - sga_taxes_and_public_dues) %>%
-  mutate('dt3_sga_patent_fee_paid' = sga_patent_fee_paid_lead3 - sga_patent_fee_paid) %>%
-  mutate('dt3_sga_rd_cost' = sga_rd_cost_lead3 - sga_rd_cost) %>%
-  mutate('dt3_sga_warranty_repair_costs' = sga_warranty_repair_costs_lead3 - sga_warranty_repair_costs) %>%
-  mutate('dt3_sga_other' = sga_other_lead3 - sga_other) %>%
-  mutate('dt3_gross_profit' = gross_profit_lead3 - gross_profit) %>%
-  mutate('dt3_rd_expenses' = rd_expenses_lead3 - rd_expenses) %>%
-  mutate('dt3_operating_income' = operating_income_lead3 - operating_income) %>%
-  mutate('dt3_non_operating_income' = non_operating_income_lead3 - non_operating_income) %>%
-  mutate('dt3_non_operating_cost' = non_operating_cost_lead3 - non_operating_cost) %>%
-  mutate('dt3_ordinary_profit' = ordinary_profit_lead3 - ordinary_profit) %>%
-  mutate('dt3_income_before_income_taxes' = income_before_income_taxes_lead3 - income_before_income_taxes) %>%
-  mutate('dt3_net_income_from_continuing_operations' = net_income_from_continuing_operations_lead3 - net_income_from_continuing_operations) %>%
-  mutate('dt3_net_income_from_non_continuing_operations' = net_income_from_non_continuing_operations_lead3 - net_income_from_non_continuing_operations) %>%
-  mutate('dt3_net_income_consolidated' = net_income_consolidated_lead3 - net_income_consolidated) %>%
-  mutate('dt3_dividend' = dividend_lead3 - dividend) %>%
-  mutate('dt3_market_cap_new' = market_cap_new_lead3 - market_cap_new) %>% 
-  mutate('dt3_p_gov' = p_gov_lead3 - p_gov) %>%
-  mutate('dt3_p_bank' = p_bank_lead3 - p_bank) %>%
-  mutate('dt3_p_stockc' = p_stockc_lead3 - p_stockc) %>%
-  mutate('dt3_p_other' = p_other_lead3 - p_other) %>%
-  mutate('dt3_p_foreign' = p_foreign_lead3 - p_foreign) %>%
-  mutate('dt3_p_individual' = p_individual_lead3 - p_individual)
-
 df_all <- df_tmp
 df_tmp <- df_all[, -1]
 df_tmp <- df_tmp[, -2]
@@ -422,23 +184,6 @@ write.csv(x = saas_desc, file = "~/Documents/GitHub/final_report/data/saas_desc.
 write.csv(x = manu_desc, file = "~/Documents/GitHub/final_report/data/manu_desc.csv")
 write.csv(x = non_manu_desc, file = "~/Documents/GitHub/final_report/data/non_manu_desc.csv")
 
-## 3年分のデータについて(基本的には、lagをとっているだけなので省略)
-# short_saas_desc <- df_saas_short %>% 
-#   descr(transpose = TRUE) %>% 
-#   tb()
-# 
-# short_manu_desc <- df_manu_short %>% 
-#   descr(transpose = TRUE) %>% 
-#   tb()
-# 
-# short_non_manu_desc <- df_non_manu_short %>% 
-#   descr(transpose = TRUE) %>% 
-#   tb()
-# 
-# write.csv(x = short_saas_desc, file = "~/Documents/GitHub/final_report/data/short_saas_desc.csv")
-# write.csv(x = short_manu_desc, file = "~/Documents/GitHub/final_report/data/short_manu_desc.csv")
-# write.csv(x = short_non_manu_desc, file = "~/Documents/GitHub/final_report/data/short_non_manu_desc.csv")
-
 ## 記述統計量
 out_desc1 <- df_tmp %>%
   descr(transpose = TRUE) %>%
@@ -491,295 +236,7 @@ single_model2 <- market_cap_new ~ founded_year + n_consolidated_subsidiaries + n
       sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
       sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
       sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
-      employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
-      p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
-      d_2017 + d_2018 + d_2019
-  )
-  
-## 複数年の変化を比較する（1年後） ##
-fe_model_dt1 <- market_cap_new_lead1 ~ founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
-  tangible_fixed_assets + intangible_fixed_assets + 
-  #patent_right + software + goodwill + leased_asset + trademark + ##sales_goodwill + design_right +
-  other_intangible_fixed_assets + total_investment_and_other_assets + ##development_cost +
-  current_liabilities + non_current_liabilities +
-  sales_operating_revenue + financial_income + #sales_cost + 
-  sales_operating_cost + unrealized_profit_on_installment_sales + #financial_costs +
-  sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
-  sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
-  sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
-  employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
-  d_manufacture + d_saas + d_manufacture * d_saas +
-  p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
-  d_2017 + d_2018 +
-  d_1 + d_2 + d_3 + d_4 + d_5 + d_6 + d_7 + d_8 + d_9 +d_10 + d_11 + ##d_12 +
-  dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-  dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-  dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-  #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-  dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-  dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-  dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-  dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-  dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-  dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-  dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-  dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-  dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend
-
-model_dt1 <- market_cap_new_lead1 ~ founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
-  tangible_fixed_assets + intangible_fixed_assets + 
-  #patent_right + software + goodwill + leased_asset + trademark + ##sales_goodwill + design_right +
-  other_intangible_fixed_assets + total_investment_and_other_assets + ##development_cost +
-  current_liabilities + non_current_liabilities +
-  sales_operating_revenue + financial_income + #sales_cost + 
-  sales_operating_cost + unrealized_profit_on_installment_sales + #financial_costs +
-  sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
-  sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
-  sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
-  employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
-  d_manufacture + d_saas + d_manufacture * d_saas +
-  d_2017 + d_2018 +
-  d_1 + d_2 + d_3 + d_4 + d_5 + d_6 + d_7 + d_8 + d_9 +d_10 + d_11 + ##d_12 +
-  dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-  dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-  dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-  #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-  dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-  dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-  dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-  dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-  dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-  dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-  dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-  dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-  dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend + 
-  d_saas * 
-  (
-    dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-      dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-      dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-      #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-      dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-      dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-      dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-      dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-      dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-      dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-      dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-      dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-      dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend
-  )
-
-fe_model_dt2 <- market_cap_new_lead2 ~ founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
-  tangible_fixed_assets + intangible_fixed_assets + 
-  #patent_right + software + goodwill + leased_asset + trademark + ##sales_goodwill + design_right +
-  other_intangible_fixed_assets + total_investment_and_other_assets + ##development_cost +
-  current_liabilities + non_current_liabilities +
-  sales_operating_revenue + financial_income + #sales_cost + 
-  sales_operating_cost + unrealized_profit_on_installment_sales + #financial_costs +
-  sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
-  sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
-  sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
-  employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
-  d_manufacture + d_saas + d_manufacture * d_saas +
-  p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
-  d_2017 + #d_2019 + ##d_2020 +
-  d_1 + d_2 + d_3 + d_4 + d_5 + d_6 + d_7 + d_8 + d_9 +d_10 + d_11 + ##d_12 +
-  dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-  dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-  dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-  #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-  dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-  dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-  dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-  dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-  dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-  dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-  dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-  dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-  dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend +
-  dt2_n_consolidated_subsidiaries + dt2_n_consolidated_subsidiaries_ipo +
-  dt2_current_assets + #dt2_cash_and_cash_equivalents + #dt2_non_current_assets + 
-  dt2_tangible_fixed_assets + dt2_intangible_fixed_assets + 
-  #dt2_patent_right + dt2_software + dt2_goodwill + dt2_leased_asset + dt2_trademark + 
-  dt2_other_intangible_fixed_assets + dt2_total_investment_and_other_assets + dt2_total_assets + dt2_current_liabilities + dt2_non_current_liabilities + dt2_total_debt + dt2_non_controlling_interests +
-  dt2_total_liabilities_and_net_assets + dt2_capital_attributable_to_owners_of_the_parent_company + dt2_sales_operating_revenue + dt2_financial_income + #dt2_sales_cost + 
-  dt2_sales_operating_cost + dt2_unrealized_profit_on_installment_sales + #dt2_sga + dt2_financial_costs + 
-  dt2_employees_end_term + dt2_avg_temp_employees + dt2_r_d_expenses + dt2_capital_investment + dt2_goodwill_amortization + dt2_sga_sales_commission + dt2_sga_storage_costs + dt2_sga_advertising_expenses +
-  dt2_sga_sales_expansion_costs + dt2_sga_allowance_for_doubtful_accounts + dt2_sga_officer_compensation + dt2_sga_provision_for_retirement_benefits_for_officers + dt2_sga_provision_for_bonuses_for_directors + dt2_sga_personnel_welfare_expenses +
-  dt2_sga_provision_for_retirement_benefits + dt2_sga_depreciation + dt2_sga_goodwill_amortization + dt2_sga_rent + dt2_sga_taxes_and_public_dues + dt2_sga_patent_fee_paid + dt2_sga_rd_cost + dt2_sga_warranty_repair_costs + dt2_sga_other +
-  dt2_gross_profit + dt2_rd_expenses + dt2_operating_income + dt2_non_operating_income + dt2_non_operating_cost + dt2_ordinary_profit + dt2_income_before_income_taxes + dt2_net_income_from_continuing_operations +
-  dt2_p_gov + dt2_p_bank + dt2_p_stockc + dt2_p_other + dt2_p_foreign + dt2_p_individual +
-  dt2_net_income_from_non_continuing_operations + dt2_net_income_consolidated + dt2_dividend
-
-model_dt2 <- market_cap_new_lead2 ~ founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
-  tangible_fixed_assets + intangible_fixed_assets + 
-  #patent_right + software + goodwill + leased_asset + trademark + ##sales_goodwill + design_right +
-  other_intangible_fixed_assets + total_investment_and_other_assets + ##development_cost +
-  current_liabilities + non_current_liabilities +
-  sales_operating_revenue + financial_income + #sales_cost + 
-  sales_operating_cost + unrealized_profit_on_installment_sales + #financial_costs +
-  sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
-  sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
-  sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
-  employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
-  d_manufacture + d_saas + d_manufacture * d_saas +
-  p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
-  d_2017 + #d_2019 + ##d_2020 +
-  d_1 + d_2 + d_3 + d_4 + d_5 + d_6 + d_7 + d_8 + d_9 +d_10 + d_11 + ##d_12 +
-  dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-  dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-  dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-  #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-  dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-  dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-  dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-  dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-  dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-  dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-  dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-  dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-  dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend +
-  dt2_n_consolidated_subsidiaries + dt2_n_consolidated_subsidiaries_ipo +
-  dt2_current_assets + #dt2_cash_and_cash_equivalents + #dt2_non_current_assets + 
-  dt2_tangible_fixed_assets + dt2_intangible_fixed_assets + 
-  #dt2_patent_right + dt2_software + dt2_goodwill + dt2_leased_asset + dt2_trademark + 
-  dt2_other_intangible_fixed_assets + dt2_total_investment_and_other_assets + dt2_total_assets + dt2_current_liabilities + dt2_non_current_liabilities + dt2_total_debt + dt2_non_controlling_interests +
-  dt2_total_liabilities_and_net_assets + dt2_capital_attributable_to_owners_of_the_parent_company + dt2_sales_operating_revenue + dt2_financial_income + #dt2_sales_cost + 
-  dt2_sales_operating_cost + dt2_unrealized_profit_on_installment_sales + #dt2_sga + dt2_financial_costs + 
-  dt2_employees_end_term + dt2_avg_temp_employees + dt2_r_d_expenses + dt2_capital_investment + dt2_goodwill_amortization + dt2_sga_sales_commission + dt2_sga_storage_costs + dt2_sga_advertising_expenses +
-  dt2_sga_sales_expansion_costs + dt2_sga_allowance_for_doubtful_accounts + dt2_sga_officer_compensation + dt2_sga_provision_for_retirement_benefits_for_officers + dt2_sga_provision_for_bonuses_for_directors + dt2_sga_personnel_welfare_expenses +
-  dt2_sga_provision_for_retirement_benefits + dt2_sga_depreciation + dt2_sga_goodwill_amortization + dt2_sga_rent + dt2_sga_taxes_and_public_dues + dt2_sga_patent_fee_paid + dt2_sga_rd_cost + dt2_sga_warranty_repair_costs + dt2_sga_other +
-  dt2_gross_profit + dt2_rd_expenses + dt2_operating_income + dt2_non_operating_income + dt2_non_operating_cost + dt2_ordinary_profit + dt2_income_before_income_taxes + dt2_net_income_from_continuing_operations +
-  dt2_p_gov + dt2_p_bank + dt2_p_stockc + dt2_p_other + dt2_p_foreign + dt2_p_individual +
-  dt2_net_income_from_non_continuing_operations + dt2_net_income_consolidated + dt2_dividend +
-  d_saas *
-  (
-    dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-      dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-      dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-      #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-      dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-      dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-      dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-      dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-      dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-      dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-      dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-      dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-      dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend +
-      dt2_n_consolidated_subsidiaries + dt2_n_consolidated_subsidiaries_ipo +
-      dt2_current_assets + #dt2_cash_and_cash_equivalents + #dt2_non_current_assets + 
-      dt2_tangible_fixed_assets + dt2_intangible_fixed_assets + 
-      #dt2_patent_right + dt2_software + dt2_goodwill + dt2_leased_asset + dt2_trademark + 
-      dt2_other_intangible_fixed_assets + dt2_total_investment_and_other_assets + dt2_total_assets + dt2_current_liabilities + dt2_non_current_liabilities + dt2_total_debt + dt2_non_controlling_interests +
-      dt2_total_liabilities_and_net_assets + dt2_capital_attributable_to_owners_of_the_parent_company + dt2_sales_operating_revenue + dt2_financial_income + #dt2_sales_cost + 
-      dt2_sales_operating_cost + dt2_unrealized_profit_on_installment_sales + #dt2_sga + dt2_financial_costs + 
-      dt2_employees_end_term + dt2_avg_temp_employees + dt2_r_d_expenses + dt2_capital_investment + dt2_goodwill_amortization + dt2_sga_sales_commission + dt2_sga_storage_costs + dt2_sga_advertising_expenses +
-      dt2_sga_sales_expansion_costs + dt2_sga_allowance_for_doubtful_accounts + dt2_sga_officer_compensation + dt2_sga_provision_for_retirement_benefits_for_officers + dt2_sga_provision_for_bonuses_for_directors + dt2_sga_personnel_welfare_expenses +
-      dt2_sga_provision_for_retirement_benefits + dt2_sga_depreciation + dt2_sga_goodwill_amortization + dt2_sga_rent + dt2_sga_taxes_and_public_dues + dt2_sga_patent_fee_paid + dt2_sga_rd_cost + dt2_sga_warranty_repair_costs + dt2_sga_other +
-      dt2_gross_profit + dt2_rd_expenses + dt2_operating_income + dt2_non_operating_income + dt2_non_operating_cost + dt2_ordinary_profit + dt2_income_before_income_taxes + dt2_net_income_from_continuing_operations +
-      dt2_p_gov + dt2_p_bank + dt2_p_stockc + dt2_p_other + dt2_p_foreign + dt2_p_individual +
-      dt2_net_income_from_non_continuing_operations + dt2_net_income_consolidated + dt2_dividend
-  )
-
-model_dt3 <- market_cap_new_lead3 ~ founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
-  tangible_fixed_assets + intangible_fixed_assets + 
-  #patent_right + software + goodwill + leased_asset + trademark + ##sales_goodwill + design_right +
-  other_intangible_fixed_assets + total_investment_and_other_assets + ##development_cost +
-  current_liabilities + non_current_liabilities +
-  sales_operating_revenue + financial_income + #sales_cost + 
-  sales_operating_cost + unrealized_profit_on_installment_sales + #financial_costs +
-  sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
-  sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
-  sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
-  employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
-  d_manufacture + #d_saas + #d_manufacture * d_saas +
-  p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
-  #d_2018 + d_2019 + ##d_2020 +
-  d_1 + d_2 + d_3 + d_4 + d_5 + d_6 + d_7 + d_8 + d_9 +d_10 + d_11 + ##d_12 +
-  #d_2018 * d_1 + d_2018 * d_2 + d_2018 * d_3 + d_2018 * d_4 + d_2018 * d_5 + d_2018 * d_6 + d_2018 * d_7 + d_2018 * d_8 + d_2018 * d_9 + d_2018 * d_10 + d_2018 * d_11 + ##d_2018 * d_12 +
-  #d_2019 * d_1 + d_2019 * d_2 + d_2019 * d_3 + d_2019 * d_4 + d_2019 * d_5 + d_2019 * d_6 + d_2019 * d_7 + d_2019 * d_8 + d_2019 * d_9 + d_2019 * d_10 + d_2019 * d_11 + ##d_2019 * d_12 +
-  #d_2020 * d_1 + d_2020 * d_2 + d_2020 * d_3 + d_2020 * d_4 + d_2020 * d_5 + d_2020 * d_6 + d_2020 * d_7 + d_2020 * d_8 + d_2020 * d_9 + d_2020 * d_10 + d_2020 * d_11 + ##+ d_2020 * d_12
-  dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-  dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-  dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-  #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-  dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-  dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-  dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-  dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-  dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-  dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-  dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-  dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-  dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend +
-  dt2_n_consolidated_subsidiaries + dt2_n_consolidated_subsidiaries_ipo +
-  dt2_current_assets + #dt2_cash_and_cash_equivalents + #dt2_non_current_assets + 
-  dt2_tangible_fixed_assets + dt2_intangible_fixed_assets + 
-  #dt2_patent_right + dt2_software + dt2_goodwill + dt2_leased_asset + dt2_trademark + 
-  dt2_other_intangible_fixed_assets + dt2_total_investment_and_other_assets + dt2_total_assets + dt2_current_liabilities + dt2_non_current_liabilities + dt2_total_debt + dt2_non_controlling_interests +
-  dt2_total_liabilities_and_net_assets + dt2_capital_attributable_to_owners_of_the_parent_company + dt2_sales_operating_revenue + dt2_financial_income + #dt2_sales_cost + 
-  dt2_sales_operating_cost + dt2_unrealized_profit_on_installment_sales +#dt2_sga + dt2_financial_costs + 
-  dt2_employees_end_term + dt2_avg_temp_employees + dt2_r_d_expenses + dt2_capital_investment + dt2_goodwill_amortization + dt2_sga_sales_commission + dt2_sga_storage_costs + dt2_sga_advertising_expenses +
-  dt2_sga_sales_expansion_costs + dt2_sga_allowance_for_doubtful_accounts + dt2_sga_officer_compensation + dt2_sga_provision_for_retirement_benefits_for_officers + dt2_sga_provision_for_bonuses_for_directors + dt2_sga_personnel_welfare_expenses +
-  dt2_sga_provision_for_retirement_benefits + dt2_sga_depreciation + dt2_sga_goodwill_amortization + dt2_sga_rent + dt2_sga_taxes_and_public_dues + dt2_sga_patent_fee_paid + dt2_sga_rd_cost + dt2_sga_warranty_repair_costs + dt2_sga_other +
-  dt2_gross_profit + dt2_rd_expenses + dt2_operating_income + dt2_non_operating_income + dt2_non_operating_cost + dt2_ordinary_profit + dt2_income_before_income_taxes + dt2_net_income_from_continuing_operations +
-  dt2_p_gov + dt2_p_bank + dt2_p_stockc + dt2_p_other + dt2_p_foreign + dt2_p_individual +
-  dt2_net_income_from_non_continuing_operations + dt2_net_income_consolidated + dt2_dividend +
-  dt3_n_consolidated_subsidiaries + dt3_n_consolidated_subsidiaries_ipo +
-  dt3_current_assets + #dt3_cash_and_cash_equivalents + #dt3_non_current_assets + 
-  dt3_tangible_fixed_assets + dt3_intangible_fixed_assets + 
-  #dt3_patent_right + dt3_software + dt3_goodwill + dt3_leased_asset + dt3_trademark + 
-  dt3_other_intangible_fixed_assets + dt3_total_investment_and_other_assets + dt3_total_assets + dt3_current_liabilities + dt3_non_current_liabilities + dt3_total_debt + dt3_non_controlling_interests +
-  dt3_total_liabilities_and_net_assets + dt3_capital_attributable_to_owners_of_the_parent_company + dt3_sales_operating_revenue + dt3_financial_income + #dt3_sales_cost + 
-  dt3_sales_operating_cost + dt3_unrealized_profit_on_installment_sales + #dt3_sga + dt3_financial_costs + 
-  dt3_employees_end_term + dt3_avg_temp_employees + dt3_r_d_expenses + dt3_capital_investment + dt3_goodwill_amortization + dt3_sga_sales_commission + dt3_sga_storage_costs + dt3_sga_advertising_expenses +
-  dt3_sga_sales_expansion_costs + dt3_sga_allowance_for_doubtful_accounts + dt3_sga_officer_compensation + dt3_sga_provision_for_retirement_benefits_for_officers + dt3_sga_provision_for_bonuses_for_directors + dt3_sga_personnel_welfare_expenses +
-  dt3_sga_provision_for_retirement_benefits + dt3_sga_depreciation + dt3_sga_goodwill_amortization + dt3_sga_rent + dt3_sga_taxes_and_public_dues + dt3_sga_patent_fee_paid + dt3_sga_rd_cost + dt3_sga_warranty_repair_costs + dt3_sga_other +
-  dt3_gross_profit + dt3_rd_expenses + dt3_operating_income + dt3_non_operating_income + dt3_non_operating_cost + dt3_ordinary_profit + dt3_income_before_income_taxes + dt3_net_income_from_continuing_operations +
-  dt3_p_gov + dt3_p_bank + dt3_p_stockc + dt3_p_other + dt3_p_foreign + dt3_p_individual + 
-  dt3_net_income_from_non_continuing_operations + dt3_net_income_consolidated + dt3_dividend +
-  d_saas *(
-    dt1_n_consolidated_subsidiaries + dt1_n_consolidated_subsidiaries_ipo +
-      dt1_current_assets + #dt1_cash_and_cash_equivalents + #dt1_non_current_assets + 
-      dt1_tangible_fixed_assets + dt1_intangible_fixed_assets + 
-      #dt1_patent_right + dt1_software + dt1_goodwill + dt1_leased_asset + dt1_trademark + 
-      dt1_other_intangible_fixed_assets + dt1_total_investment_and_other_assets + dt1_total_assets + dt1_current_liabilities + dt1_non_current_liabilities + dt1_total_debt + dt1_non_controlling_interests +
-      dt1_total_liabilities_and_net_assets + dt1_capital_attributable_to_owners_of_the_parent_company + dt1_sales_operating_revenue + dt1_financial_income + #dt1_sales_cost + 
-      dt1_sales_operating_cost + dt1_unrealized_profit_on_installment_sales + #dt1_sga + dt1_financial_costs + 
-      dt1_employees_end_term + dt1_avg_temp_employees + dt1_r_d_expenses + dt1_capital_investment + dt1_goodwill_amortization + dt1_sga_sales_commission + dt1_sga_storage_costs + dt1_sga_advertising_expenses +
-      dt1_sga_sales_expansion_costs + dt1_sga_allowance_for_doubtful_accounts + dt1_sga_officer_compensation + dt1_sga_provision_for_retirement_benefits_for_officers + dt1_sga_provision_for_bonuses_for_directors + dt1_sga_personnel_welfare_expenses +
-      dt1_sga_provision_for_retirement_benefits + dt1_sga_depreciation + dt1_sga_goodwill_amortization + dt1_sga_rent + dt1_sga_taxes_and_public_dues + dt1_sga_patent_fee_paid + dt1_sga_rd_cost + dt1_sga_warranty_repair_costs + dt1_sga_other +
-      dt1_gross_profit + dt1_rd_expenses + dt1_operating_income + dt1_non_operating_income + dt1_non_operating_cost + dt1_ordinary_profit + dt1_income_before_income_taxes + dt1_net_income_from_continuing_operations +
-      dt1_p_gov + dt1_p_bank + dt1_p_stockc + dt1_p_other + dt1_p_foreign + dt1_p_individual +
-      dt1_net_income_from_non_continuing_operations + dt1_net_income_consolidated + dt1_dividend +
-      dt2_n_consolidated_subsidiaries + dt2_n_consolidated_subsidiaries_ipo +
-      dt2_current_assets + #dt2_cash_and_cash_equivalents + #dt2_non_current_assets + 
-      dt2_tangible_fixed_assets + dt2_intangible_fixed_assets + 
-      #dt2_patent_right + dt2_software + dt2_goodwill + dt2_leased_asset + dt2_trademark + 
-      dt2_other_intangible_fixed_assets + dt2_total_investment_and_other_assets + dt2_total_assets + dt2_current_liabilities + dt2_non_current_liabilities + dt2_total_debt + dt2_non_controlling_interests +
-      dt2_total_liabilities_and_net_assets + dt2_capital_attributable_to_owners_of_the_parent_company + dt2_sales_operating_revenue + dt2_financial_income + #dt2_sales_cost + 
-      dt2_sales_operating_cost + dt2_unrealized_profit_on_installment_sales +#dt2_sga + dt2_financial_costs + 
-      dt2_employees_end_term + dt2_avg_temp_employees + dt2_r_d_expenses + dt2_capital_investment + dt2_goodwill_amortization + dt2_sga_sales_commission + dt2_sga_storage_costs + dt2_sga_advertising_expenses +
-      dt2_sga_sales_expansion_costs + dt2_sga_allowance_for_doubtful_accounts + dt2_sga_officer_compensation + dt2_sga_provision_for_retirement_benefits_for_officers + dt2_sga_provision_for_bonuses_for_directors + dt2_sga_personnel_welfare_expenses +
-      dt2_sga_provision_for_retirement_benefits + dt2_sga_depreciation + dt2_sga_goodwill_amortization + dt2_sga_rent + dt2_sga_taxes_and_public_dues + dt2_sga_patent_fee_paid + dt2_sga_rd_cost + dt2_sga_warranty_repair_costs + dt2_sga_other +
-      dt2_gross_profit + dt2_rd_expenses + dt2_operating_income + dt2_non_operating_income + dt2_non_operating_cost + dt2_ordinary_profit + dt2_income_before_income_taxes + dt2_net_income_from_continuing_operations +
-      dt2_p_gov + dt2_p_bank + dt2_p_stockc + dt2_p_other + dt2_p_foreign + dt2_p_individual +
-      dt2_net_income_from_non_continuing_operations + dt2_net_income_consolidated + dt2_dividend +
-      dt3_n_consolidated_subsidiaries + dt3_n_consolidated_subsidiaries_ipo +
-      dt3_current_assets + #dt3_cash_and_cash_equivalents + #dt3_non_current_assets + 
-      dt3_tangible_fixed_assets + dt3_intangible_fixed_assets + 
-      #dt3_patent_right + dt3_software + dt3_goodwill + dt3_leased_asset + dt3_trademark + 
-      dt3_other_intangible_fixed_assets + dt3_total_investment_and_other_assets + dt3_total_assets + dt3_current_liabilities + dt3_non_current_liabilities + dt3_total_debt + dt3_non_controlling_interests +
-      dt3_total_liabilities_and_net_assets + dt3_capital_attributable_to_owners_of_the_parent_company + dt3_sales_operating_revenue + dt3_financial_income + #dt3_sales_cost + 
-      dt3_sales_operating_cost + dt3_unrealized_profit_on_installment_sales + #dt3_sga + dt3_financial_costs + 
-      dt3_employees_end_term + dt3_avg_temp_employees + dt3_r_d_expenses + dt3_capital_investment + dt3_goodwill_amortization + dt3_sga_sales_commission + dt3_sga_storage_costs + dt3_sga_advertising_expenses +
-      dt3_sga_sales_expansion_costs + dt3_sga_allowance_for_doubtful_accounts + dt3_sga_officer_compensation + dt3_sga_provision_for_retirement_benefits_for_officers + dt3_sga_provision_for_bonuses_for_directors + dt3_sga_personnel_welfare_expenses +
-      dt3_sga_provision_for_retirement_benefits + dt3_sga_depreciation + dt3_sga_goodwill_amortization + dt3_sga_rent + dt3_sga_taxes_and_public_dues + dt3_sga_patent_fee_paid + dt3_sga_rd_cost + dt3_sga_warranty_repair_costs + dt3_sga_other +
-      dt3_gross_profit + dt3_rd_expenses + dt3_operating_income + dt3_non_operating_income + dt3_non_operating_cost + dt3_ordinary_profit + dt3_income_before_income_taxes + dt3_net_income_from_continuing_operations +
-      dt3_p_gov + dt3_p_bank + dt3_p_stockc + dt3_p_other + dt3_p_foreign + dt3_p_individual + 
-      dt3_net_income_from_non_continuing_operations + dt3_net_income_consolidated + dt3_dividend
+      employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization##officer_bonus_provision +
   )
   
 
@@ -796,39 +253,25 @@ vif_res2 <- car::vif(all_ols)
 
 all_ols <- plm(single_model, data=all, model="pooling")
 all_ols2 <- plm(single_model2, data=all, model="pooling")
-all_ols_dt1 <- lm(fe_model_dt1, data=df_short)
-ols_dt1 <- lm(model_dt1, data=df_short)
-all_ols_dt2 <- lm(fe_model_dt2, data=df_middle)
-ols_dt2 <- lm(model_dt2, data=df_middle)
-all_ols_dt3 <- lm(model_dt3, data=df_long)
-# alias(all_ols_dt1_2)
-# vif(all_ols_dt1_2)
+
 summary(all_ols)
 summary(fixef(all_ols))
-summary(all_ols_dt1)
-summary(all_ols_dt3_2)
-all_ols_dt3_2_new
+
 
 # 固定効果モデル(LSDV(within)推定)
 # filter(all, n() > 1)
 all_fe <- plm(single_model, data=all, model="within")
+summary(all_fe)
 all_fe2 <- plm(single_model2, data=all, model="within")
+summary(all_fe2)
 
 # all_fe_log <- plm(single_model_log, data=all, model="within")
-all_fe_dt1 <- plm(fe_model_dt1, data=df_short, model="within")
-fe_dt1 <- plm(model_dt1, data=df_short, model="within")
-all_fe_dt2 <- plm(fe_model_dt2, data=df_middle, model="within")
-fe_dt2 <- plm(model_dt2, data=df_middle, model="within")
 
 summary(all_fe)
 summary(fixef(all_fe))
-summary(all_fe_dt1)
-# fixef_all_fe_dt1 <- summary(fixef(all_fe_dt1))
-# write.csv(x = fixef_all_fe_dt1, file = "~/Documents/GitHub/final_report/data/fixef_all_fe_dt1.csv")
 
 #F検定を行う(p値が小さければ、帰無仮説が棄却され「個別効果はある」ということになる)
 pFtest(all_fe, all_ols)
-pFtest(all_fe_dt1, all_ols_dt1)
 
 # GLS推定
 # all_gls <- plm(formula = single_model, data=all,model="random")#多重共線性のため結果が得られない
@@ -843,43 +286,24 @@ saas <- pdata.frame(df_saas, index = c("corp_name", "fiscal_year"))
 saas_fe <- plm(single_model, data=df_saas, model="within")
 saas_fe2 <- plm(single_model2, data=df_saas, model="within")
 # saas_fe_log <- plm(single_model_log, data=df_saas, model="within")
-saas_fe_dt1 <- plm(fe_model_dt1, data=df_saas_short, model="within")
-saas_fe_dt1_2 <- plm(model_dt1, data=df_saas_short, model="within")
-saas_fe_dt2 <- plm(fe_model_dt2, data=df_saas_middle, model="within") #サンプル数が少ないため推定できず
-saas_ols_dt2 <- lm(fe_model_dt2, data=df_saas_middle) #サンプル数が少ないため推定できず
-saas_ols_dt3 <- lm(model_dt3, data=df_saas_long) #サンプル数が少ないため推定できず
-summary(saas_ols_dt2)
 # summary(saas_fe)
-summary(saas_fe_dt1)
+
 
 ## 非製造業 ##
 non_manu <- pdata.frame(df_non_manu, index = c("corp_name", "fiscal_year"))
 non_manu_fe <- plm(single_model, data=non_manu, model="within")
 non_manu_fe2 <- plm(single_model2, data=non_manu, model="within")
 # non_manu_fe_log <- plm(single_model_log, data=non_manu, model="within")
-non_manu_fe_dt1 <- plm(fe_model_dt1, data=df_non_manu_short, model="within")
-non_manu_fe_dt1_2 <- plm(model_dt1, data=df_non_manu_short, model="within")
-non_manu_fe_dt2 <- plm(fe_model_dt2, data=df_non_manu_middle, model="within")
-non_manu_fe_dt2_2 <- plm(model_dt2, data=df_non_manu_middle, model="within")
-non_manu_ols_dt3 <- lm(model_dt3, data=df_non_manu_long)
 # summary(non_manu_fe)
-summary(non_manu_fe_dt1)
 
 ## 製造業 ##
 manu <- pdata.frame(df_manu, index = c("corp_name", "fiscal_year"))
 manu_fe <- plm(single_model , data=manu, model="within")
 manu_fe2 <- plm(single_model2 , data=manu, model="within")
 # manu_fe_log <- plm(single_model_log , data=manu, model="within")
-manu_fe_dt1 <- plm(fe_model_dt1, data=df_manu_short, model="within")
-manu_fe_dt1_2 <- plm(model_dt1, data=df_manu_short, model="within")
-manu_fe_dt2 <- plm(fe_model_dt2, data=df_manu_middle, model="within")
-manu_fe_dt2_2 <- plm(model_dt2, data=df_manu_middle, model="within")
-manu_ols_dt3 <- lm(model_dt3, data=df_manu_long)
 # summary(manu_fe)
-summary(manu_fe_dt1)
 
 library(stargazer)
-
 ## OLSの4年分の分析
 stargazer(all_ols, type = "html", out = "Documents/GitHub/final_report/data/ols_ouput_4years_v2.doc")
 stargazer(all_ols2, type = "html", out = "Documents/GitHub/final_report/data/ols_ouput_4years_v2.5.doc")
@@ -896,22 +320,6 @@ write.csv(summary(all_fe2)$coef,file="~/Documents/GitHub/final_report/data/fe_ou
 stargazer(all_fe2, type = "html", out = "Documents/GitHub/final_report/data/fe_ouput_4years_v2.5.doc")
 # stargazer(all_fe_log, saas_fe_log, manu_fe_log, non_manu_fe_log, type = "html", out = "Documents/GitHub/final_report/data/fe_log_ouput_4years.doc")
 
-## 固定効果の3年分の分析
-stargazer(all_fe_dt1, saas_fe_dt1, manu_fe_dt1, non_manu_fe_dt1, type = "html", out = "Documents/GitHub/final_report/data/fe_short_ouput_3years_v2.doc") #saas_fe_dt1で多重共線性の影響あるため出力できず
-# stargazer(all_ols_dt1, all_fe_dt1, saas_fe_dt1, manu_fe_dt1, non_manu_fe_dt1, type = "html", out = "Documents/GitHub/final_report/data/ols_fe_short_ouput_3years_v2.doc") #saas_fe_dt1で多重共線性の影響あるため出力できず
-stargazer(all_ols_dt1, all_fe_dt1, manu_fe_dt1, non_manu_fe_dt1, type = "html", out = "Documents/GitHub/final_report/data/ols_fe_short_ouput_3years_v2.doc") 
-summary(non_manu_fe_dt1)
-summary(all_fe_dt1)
-stargazer(all_ols_dt1, type = "html", out = "Documents/GitHub/final_report/data/ols_short_ouput_3years_v3.doc") 
-
-## 固定効果の2年分の分析
-# stargazer(all_ols_dt2, all_fe_dt2, saas_fe_dt2, manu_fe_dt2, non_manu_fe_dt2, type = "html", out = "Documents/GitHub/final_report/data/ols_fe_middle_ouput_2years_v2.doc") #saasの部分、サンプル数が少ないため推定できず
-stargazer(all_ols_dt2, all_fe_dt2, manu_fe_dt2, non_manu_fe_dt2, type = "html", out = "Documents/GitHub/final_report/data/ols_fe_middle_ouput_2years_v2_without_saas.doc")
-stargazer(all_ols_dt2, type = "html", out = "Documents/GitHub/final_report/data/ols_middle_ouput_2years_v2.doc")
-
-## 1年分の分析（ols）
-stargazer(all_ols_dt3, saas_ols_dt3, manu_ols_dt3, non_manu_ols_dt3, type = "html", out = "Documents/GitHub/final_report/data/ols_long_year_v3.doc")
-stargazer(all_ols_dt3, manu_ols_dt3, non_manu_ols_dt3, type = "html", out = "Documents/GitHub/final_report/data/ols_long_year_v3_without_saas.doc")
 
 library(MASS)
 all_ols_dt3_2_new_ <- lm(model_dt3, data=df_long)
