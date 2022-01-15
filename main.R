@@ -41,6 +41,8 @@ filter(tmp2, tmp2[2]>4)
 #ダウンロードしたデータを取り込む
 df <- read_csv("~/Documents/GitHub/final_report/data/target_final.csv")
 
+corp_profile <- read_csv("~/Documents/GitHub/final_report/data/corp_profile.csv")
+
 # summary(target)
 
 
@@ -462,6 +464,37 @@ single_model <- market_cap_new ~ founded_year + n_consolidated_subsidiaries + n_
   p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
   d_2017 + d_2018 + d_2019 + 
   d_1 + d_2 + d_3 + d_4 + d_5 + d_6 + d_7 + d_8 + d_9 +d_10 + d_11
+
+single_model2 <- market_cap_new ~ founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
+  tangible_fixed_assets + intangible_fixed_assets + 
+  #patent_right + software + goodwill + leased_asset + trademark +## sales_goodwill + design_right +
+  other_intangible_fixed_assets + total_investment_and_other_assets + ##development_cost +
+  current_liabilities + non_current_liabilities +
+  sales_operating_revenue + financial_income + #sales_cost + 
+  sales_operating_cost + unrealized_profit_on_installment_sales + #financial_costs +
+  sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
+  sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
+  sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
+  employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
+  d_manufacture + d_saas + d_manufacture * d_saas +
+  p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
+  d_2017 + d_2018 + d_2019 + 
+  d_1 + d_2 + d_3 + d_4 + d_5 + d_6 + d_7 + d_8 + d_9 +d_10 + d_11 +
+  d_saas *(
+    founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
+      tangible_fixed_assets + intangible_fixed_assets + 
+      #patent_right + software + goodwill + leased_asset + trademark +## sales_goodwill + design_right +
+      other_intangible_fixed_assets + total_investment_and_other_assets + ##development_cost +
+      current_liabilities + non_current_liabilities +
+      sales_operating_revenue + financial_income + #sales_cost + 
+      sales_operating_cost + unrealized_profit_on_installment_sales + #financial_costs +
+      sga_sales_commission + sga_storage_costs + sga_advertising_expenses + sga_sales_expansion_costs + sga_allowance_for_doubtful_accounts + sga_officer_compensation +
+      sga_provision_for_retirement_benefits_for_officers + sga_provision_for_bonuses_for_directors + sga_personnel_welfare_expenses + sga_provision_for_retirement_benefits +
+      sga_depreciation + sga_goodwill_amortization + sga_rent + sga_taxes_and_public_dues + sga_patent_fee_paid + sga_rd_cost + sga_warranty_repair_costs + sga_other +
+      employees_end_term + avg_temp_employees + r_d_expenses + capital_investment + goodwill_amortization + ##officer_bonus_provision +
+      p_gov + p_bank + p_stockc + p_other + p_foreign + p_individual +
+      d_2017 + d_2018 + d_2019
+  )
   
 ## 複数年の変化を比較する（1年後） ##
 fe_model_dt1 <- market_cap_new_lead1 ~ founded_year + n_consolidated_subsidiaries + n_consolidated_subsidiaries_ipo + current_assets + #cash_and_cash_equivalents + #non_current_assets + 
@@ -755,14 +788,14 @@ all <- pdata.frame(df_tmp, index = c("corp_name", "fiscal_year"))
 
 ## 個別効果を無視して重回帰分析する
 all_ols <- lm(single_model, data=all)
-# all_ols2 <- lm(single_model2, data=all)
+all_ols2 <- lm(single_model2, data=all)
 alias(all_ols) #lm(single_model2, data=all))
 
 vif_res2 <- car::vif(all_ols)
-write.csv(x = vif_res2, file = "~/Documents/GitHub/final_report/data/vif_cor_all2.csv")
+# write.csv(x = vif_res2, file = "~/Documents/GitHub/final_report/data/vif_cor_all2.csv")
 
-all_ols <- plm(single_model, data=all, model="pooling") #多重共線性のため結果が得られない
-summary(all_ols)
+all_ols <- plm(single_model, data=all, model="pooling")
+all_ols2 <- plm(single_model2, data=all, model="pooling")
 all_ols_dt1 <- lm(fe_model_dt1, data=df_short)
 ols_dt1 <- lm(model_dt1, data=df_short)
 all_ols_dt2 <- lm(fe_model_dt2, data=df_middle)
@@ -779,7 +812,7 @@ all_ols_dt3_2_new
 # 固定効果モデル(LSDV(within)推定)
 # filter(all, n() > 1)
 all_fe <- plm(single_model, data=all, model="within")
-all_fe_2_new_ <- stats::step(all_fe) #かなり時間かかるので誤って実行しないようにコメントアウト
+all_fe2 <- plm(single_model2, data=all, model="within")
 
 # all_fe_log <- plm(single_model_log, data=all, model="within")
 all_fe_dt1 <- plm(fe_model_dt1, data=df_short, model="within")
@@ -808,6 +841,7 @@ phtest(all_fe, all_gls)
 ## saas企業 ##
 saas <- pdata.frame(df_saas, index = c("corp_name", "fiscal_year"))
 saas_fe <- plm(single_model, data=df_saas, model="within")
+saas_fe2 <- plm(single_model2, data=df_saas, model="within")
 # saas_fe_log <- plm(single_model_log, data=df_saas, model="within")
 saas_fe_dt1 <- plm(fe_model_dt1, data=df_saas_short, model="within")
 saas_fe_dt1_2 <- plm(model_dt1, data=df_saas_short, model="within")
@@ -821,6 +855,7 @@ summary(saas_fe_dt1)
 ## 非製造業 ##
 non_manu <- pdata.frame(df_non_manu, index = c("corp_name", "fiscal_year"))
 non_manu_fe <- plm(single_model, data=non_manu, model="within")
+non_manu_fe2 <- plm(single_model2, data=non_manu, model="within")
 # non_manu_fe_log <- plm(single_model_log, data=non_manu, model="within")
 non_manu_fe_dt1 <- plm(fe_model_dt1, data=df_non_manu_short, model="within")
 non_manu_fe_dt1_2 <- plm(model_dt1, data=df_non_manu_short, model="within")
@@ -833,6 +868,7 @@ summary(non_manu_fe_dt1)
 ## 製造業 ##
 manu <- pdata.frame(df_manu, index = c("corp_name", "fiscal_year"))
 manu_fe <- plm(single_model , data=manu, model="within")
+manu_fe2 <- plm(single_model2 , data=manu, model="within")
 # manu_fe_log <- plm(single_model_log , data=manu, model="within")
 manu_fe_dt1 <- plm(fe_model_dt1, data=df_manu_short, model="within")
 manu_fe_dt1_2 <- plm(model_dt1, data=df_manu_short, model="within")
@@ -844,8 +880,20 @@ summary(manu_fe_dt1)
 
 library(stargazer)
 
+## OLSの4年分の分析
+stargazer(all_ols, type = "html", out = "Documents/GitHub/final_report/data/ols_ouput_4years_v2.doc")
+stargazer(all_ols2, type = "html", out = "Documents/GitHub/final_report/data/ols_ouput_4years_v2.5.doc")
+
+library(memisc)
+#回帰分析の結果を比較できる形でCSVファイルに保存
+ols_resultTable<- mtable(all_ols2)
+write.mtable(ols_resultTable,file="~/Documents/GitHub/final_report/data/ols_ouput_4years_v2.5.csv",colsep=",")
+
 ## 固定効果の4年分の分析
 stargazer(all_fe, saas_fe, manu_fe, non_manu_fe, type = "html", out = "Documents/GitHub/final_report/data/fe_ouput_4years_v2.doc")
+
+write.csv(summary(all_fe2)$coef,file="~/Documents/GitHub/final_report/data/fe_ouput_4years_v2.5.csv")
+stargazer(all_fe2, type = "html", out = "Documents/GitHub/final_report/data/fe_ouput_4years_v2.5.doc")
 # stargazer(all_fe_log, saas_fe_log, manu_fe_log, non_manu_fe_log, type = "html", out = "Documents/GitHub/final_report/data/fe_log_ouput_4years.doc")
 
 ## 固定効果の3年分の分析
@@ -881,6 +929,15 @@ stargazer(resultTable2, type = "html", out = "Documents/GitHub/final_report/data
 
 
 
+step.all_ols2_2_new_ <- stats::step(all_ols2) #かなり時間かかるので誤って実行しないようにコメントアウト
+summaryStep.all_ols2_2_new_ <- summary(step.all_ols2_2_new_)
+
+coef <- summaryStep.all_ols2_2_new_$coefficients           #回帰係数
+r.squared <- summaryStep.all_ols2_2_new_$r.squared         #決定係数
+adj.r.squared <- summaryStep.all_ols2_2_new_$adj.r.squared #修正決定係数
+resultTable3 <- cbind(coef, r.squared = r.squared, adj.r.squared = adj.r.squared)
+resultTable4 <- cbind(coef)
+stargazer(resultTable3, type = "html", out = "Documents/GitHub/final_report/data/ols_ouput_4years_stepwise.doc")
 # ## 対数を取ったバージョン ※0は対数値が取れないため、0の次の最小値を足した上で対数を取る
 # #参考=>https://datachemeng.com/post-4632/
 # single_model_log <- log(market_cap_new) ~ log(founded_year) + log(n_consolidated_subsidiaries) + log(n_consolidated_subsidiaries_ipo) + log(current_assets) + #log(cash_and_cash_equivalents) + #log(non_current_assets) + 
